@@ -1,0 +1,18 @@
+2020-02-26 13:36:16,939 root  INFO     phase: export
+2020-02-26 13:36:16,939 root  INFO     model_dir: ./checkpoints
+2020-02-26 13:36:16,939 root  INFO     load_model: True
+2020-02-26 13:36:16,939 root  INFO     output_dir: ./results
+2020-02-26 13:36:16,939 root  INFO     steps_per_checkpoint: 0
+2020-02-26 13:36:16,939 root  INFO     batch_size: 1
+2020-02-26 13:36:16,943 root  INFO     learning_rate: 1.000000
+2020-02-26 13:36:16,951 root  INFO     reg_val: 0
+2020-02-26 13:36:16,951 root  INFO     max_gradient_norm: 5.000000
+2020-02-26 13:36:16,951 root  INFO     clip_gradients: True
+2020-02-26 13:36:16,951 root  INFO     max_image_width 160.000000
+2020-02-26 13:36:16,951 root  INFO     max_prediction_length 8.000000
+2020-02-26 13:36:16,955 root  INFO     channels: 1
+2020-02-26 13:36:16,959 root  INFO     target_embedding_size: 10.000000
+2020-02-26 13:36:16,959 root  INFO     attn_num_hidden: 128
+2020-02-26 13:36:16,963 root  INFO     attn_num_layers: 2
+2020-02-26 13:36:16,963 root  INFO     visualize: False
+2020-02-26 13:36:18,767 root  INFO     Reading model parameters from ./checkpoints\model.ckpt-486500
