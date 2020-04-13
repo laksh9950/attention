@@ -129,6 +129,7 @@ class Model(object):
             )
             self.img_data = tf.map_fn(
                 self._prepare_image, self.img_data, dtype=tf.float32)
+
             num_images = tf.shape(self.img_data)[0]
 
             # TODO: create a mask depending on the image/batch size
@@ -337,39 +338,75 @@ class Model(object):
         else:
             width_resize_ratio = width / pad_width
             height_resize_ratio = height / max_height
-        attention = attns[0][9]
+        attention_1 = attns[0][0]
+        attention_4 = attns[0][3]
+        attention_10 = attns[0][9]
 
         # Get maximal attentional focus.
-        score = attention.max()
+        score_1 = attention_1.max()
+        score_4 = attention_4.max()
+        score_10 = attention_10.max()
 
         # Reshape the attention vector.
         nrows = 1  # should match number of encoded rows
-        attention = attention.reshape((nrows, -1))
+        attention_1 = attention_1.reshape((nrows, -1))
+        attention_4 = attention_4.reshape((nrows, -1))
+        attention_10 = attention_10.reshape((nrows, -1))
 
         # Map attention to fixed value.
         if normalize:
-            attention *= (1.0 / attention.max())
+            attention_1 *= (1.0 / attention_1.max())
+            attention_4 *= (1.0 / attention_4.max())
+            attention_10 *= (1.0 / attention_10.max())
             if binarize:
-                attention[attention < threshold] = 0
+                attention_1[attention_1 < threshold] = 0
+                attention_4[attention_4 < threshold] = 0
+                attention_10[attention_10 < threshold] = 0
         elif binarize:
-            attention[attention >= score * threshold] = 1
-            attention[attention < score] = 0
+            attention_1[attention_1 >= score_1 * threshold] = 1
+            attention_1[attention_1 < score_1] = 0
+            attention_4[attention_4 >= score_4 * threshold] = 1
+            attention_4[attention_4 < score_4] = 0
+            attention_10[attention_10 >= score_10 * threshold] = 1
+            attention_10[attention_10 < score_10] = 0
 
         # Resize attention to the image size, cropping padded regions.
-        attention = Image.fromarray(attention)
-        attention = attention.resize(
+        attention_1 = Image.fromarray(attention_1)
+        attention_4 = Image.fromarray(attention_4)
+        attention_10 = Image.fromarray(attention_10)
+        attention_1 = attention_1.resize(
             (int(pad_width*width_resize_ratio),
              int(pad_height*height_resize_ratio)),
             Image.NEAREST)
-        attention = attention.crop((0, 0, width, height))
-        attention = np.asarray(attention)
-        a = attention[0]
+        attention_4 = attention_4.resize(
+            (int(pad_width*width_resize_ratio),
+             int(pad_height*height_resize_ratio)),
+            Image.NEAREST)
+        attention_10 = attention_10.resize(
+            (int(pad_width*width_resize_ratio),
+             int(pad_height*height_resize_ratio)),
+            Image.NEAREST)
+        attention_1 = attention_1.crop((0, 0, width, height))
+        attention_4 = attention_4.crop((0, 0, width, height))
+        attention_10 = attention_10.crop((0, 0, width, height))
+        attention_1 = np.asarray(attention_1)
+        attention_4 = np.asarray(attention_4)
+        attention_10 = np.asarray(attention_10)
+        a = attention_1[0]
+        c = attention_4[0]
+        b = attention_10[0]
+        # print(b)
         # print(a)
         aw = np.where(a == 1)
-        print(aw)
-        coordinate = aw[-1]
-        """   
-        visualize_attention(image_file_data,
+        cw = np.where(c == 1)
+        # print(cw)
+        bw = np.where(b == 1)
+        coordinate_1 = aw[-1]
+        coordinate_4 = cw[-1]
+        coordinate_10 = bw[-1]
+        # print(coordinate_10)
+
+        """visualize_attention(image_file_data,
                             'out',
                             attns,
                             text,
@@ -378,24 +415,28 @@ class Model(object):
                             threshold=threshold,
                             normalize=normalize,
                             binarize=binarize,
-                            flag=None)
+                            flag=None)"""
 
-        """
-        return (text, probability, coordinate)
+        return (text, probability, coordinate_1, coordinate_4, coordinate_10)
 
-    def test(self, data_path):
-        print("test")
+    def test(self):
+        # print("test")
+        print('test')
         current_step = 0
         num_correct = 0.0
         num_total = 0.0
-
-        s_gen = DataGen(data_path, self.buckets, epochs=1,
+        a = []
+        s_gen = DataGen('test.tfrecords', self.buckets, epochs=1,
                         max_width=self.max_original_width)
+        # print('hello')
+
         for batch in s_gen.gen(1):
+            # print('BATCH')
             current_step += 1
             # Get a batch (one image) and make a step.
             start_time = time.time()
             result = self.step(batch, self.forward_only)
+            # print('resulut')
             curr_step_time = (time.time() - start_time)
 
             num_total += 1
@@ -407,11 +448,16 @@ class Model(object):
                 output = output.decode('iso-8859-1')
                 ground = ground.decode('iso-8859-1')
                 comment = comment.decode('iso-8859-1')
+                #batch['data'] = batch['data'].decode('iso-8859-1')
 
             probability = result['probability']
+            print(output)
 
             if self.use_distance:
+                #a.append(distance.levenshtein(output, ground))
                 incorrect = distance.levenshtein(output, ground)
+                # if incorrect >= 3:
+                #   print(ground+'incorrct'+str(incorrect))
                 if not ground:
                     if not output:
                         incorrect = 0
@@ -464,18 +510,20 @@ class Model(object):
                              probability,
                              correctness))
 
-    def train(self, data_path, num_epoch):
+    def train(self, num_epoch=10):
+        print('training')
         logging.info('num_epoch: %d', num_epoch)
         s_gen = DataGen(
-            data_path, self.buckets,
+            'training.tfrecords', self.buckets,
             epochs=num_epoch, max_width=self.max_original_width
         )
+
         step_time = 0.0
         loss = 0.0
         current_step = 0
         skipped_counter = 0
         writer = tf.summary.FileWriter(self.model_dir, self.sess.graph)
-
+        print('Starting the training process.')
         logging.info('Starting the training process.')
         for batch in s_gen.gen(self.batch_size):
 
@@ -534,7 +582,7 @@ class Model(object):
                 logging.info("Saving the model at step %d.", current_step)
                 self.saver_all.save(
                     self.sess, self.checkpoint_path, global_step=self.global_step)
-                self.test(data_path=r"C:\Users\LAksh\Downloads\Laxya_Agarwal-IITB-Assignment-master\Laxya_Agarwal-IITB-Assignment-master\attention-ocr-master\training.tfrecords")
+                # self.test()
                 print("hOOOOOO")
 
                 step_time, loss = 0.0, 0.0
@@ -555,6 +603,7 @@ class Model(object):
                             global_step=self.global_step)
 
     # step, read one batch, generate gradients
+
     def step(self, batch, forward_only):
         img_data = batch['data']
         decoder_inputs = batch['decoder_inputs']

@@ -126,7 +126,7 @@ def map_attentions(img_data, attentions, pred, pad_width, pad_height,
 
     # Map the attention for each predicted character.
     for idx in range(len(pred)):
-        attention = attentions[0][9]
+        attention = attentions[0][idx]
 
         # Get maximal attentional focus.
         score = attention.max()
@@ -152,12 +152,7 @@ def map_attentions(img_data, attentions, pred, pad_width, pad_height,
             Image.NEAREST)
         attention = attention.crop((0, 0, width, height))
         attention = np.asarray(attention)
-        a = attention[0]
-        print(a)
-        aw = np.where(a == 1)
-        print(aw[-1][-1])
 
-        break
         # Add new axis as needed (e.g., RGB images).
         if len(img_data.shape) == 3:
             attention = attention[..., np.newaxis]

@@ -17,7 +17,7 @@ class Config(object):
     MODEL_DIR = './checkpoints'
     LOG_PATH = 'aocr.log'
     OUTPUT_DIR = './results'
-    STEPS_PER_CHECKPOINT = 100
+    STEPS_PER_CHECKPOINT = 10
     EXPORT_FORMAT = 'savedmodel'
     EXPORT_PATH = 'exported'
     FORCE_UPPERCASE = True
@@ -25,8 +25,8 @@ class Config(object):
     FULL_ASCII = True
 
     # Optimization
-    NUM_EPOCH = 1000
-    BATCH_SIZE = 65
+    NUM_EPOCH = 10
+    BATCH_SIZE = 10
     INITIAL_LEARNING_RATE = 1.0
 
     # Network parameters
@@ -39,11 +39,12 @@ class Config(object):
     LOAD_MODEL = True
     OLD_MODEL_VERSION = False
     TARGET_VOCAB_SIZE = 26+10+3  # 0: PADDING, 1: GO, 2: EOS, >2: 0-9, a-z
-    CHANNELS = 1  # number of color channels from source image (1 = grayscale, 3 = rgb)
+    # number of color channels from source image (1 = grayscale, 3 = rgb)
+    CHANNELS = 1
 
     MAX_WIDTH = 256
-    MAX_HEIGHT = 32
-    MAX_PREDICTION =48
+    MAX_HEIGHT = 64
+    MAX_PREDICTION = 50
 
     USE_DISTANCE = True
 

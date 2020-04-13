@@ -20,8 +20,9 @@ from defaults import Config
 import dataset
 from data_gen import DataGen
 from export import Exporter
-
-"""current_dir = os.getcwd()
+# firstai.main()
+"""
+current_dir = os.getcwd()
 
 files = os.listdir(current_dir)
 
@@ -37,7 +38,7 @@ i = 0
 if not os.path.exists('cropped'):
 	os.makedirs('cropped')
 """
-if not os.path.exists('cropped'):
+""""if not os.path.exists('cropped'):
     os.makedirs('cropped')
 
 
@@ -107,47 +108,45 @@ if __name__ == '__main__':
         cropped_img = four_point_transform(image, pts)
         #img = cropped_img.read()
         cv2.imwrite('./cropped/new'+str(i)+'.jpg', cropped_img)
-    starttime = time.time()
-    sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True))
-    DataGen.set_full_ascii_charmap()
-    model = Model(
-        phase='predict',
-        visualize=False,
-        output_dir='./',
-        batch_size=1,
-        initial_learning_rate=1,
-        steps_per_checkpoint=0,
-        model_dir='./checkpoints',
-        target_embedding_size=10,
-        attn_num_hidden=128,
-        attn_num_layers=2,
-        clip_gradients=True,
-        max_gradient_norm=5.0,
-        session=sess,
-        load_model=True,
-        gpu_id=0,
-        use_gru=False,
-        use_distance=True,
-        max_image_width=256,
-        max_image_height=32,
-        max_prediction_length=48,
-        channels=1,
-    )
-    firstai.main("./", pts, model)
-    endtime = time.time()
-    result = endtime-starttime
-    print(result)
-    # with open('./a.png', 'rb') as img_file:
-    #   img = img_file.read()
+    starttime = time.time()"""
+sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True))
+DataGen.set_full_ascii_charmap()
+model = Model(
+    phase='predict',
+    visualize=True,
+    output_dir='./',
+    batch_size=1,
+    initial_learning_rate=1,
+    steps_per_checkpoint=10,
+    model_dir='./checkpoints',
+    target_embedding_size=10,
+    attn_num_hidden=128,
+    attn_num_layers=2,
+    clip_gradients=True,
+    max_gradient_norm=5.0,
+    session=sess,
+    load_model=True,
+    gpu_id=0,
+    use_gru=False,
+    use_distance=True,
+    max_image_width=256,
+    max_image_height=64,
+    max_prediction_length=50,
+    channels=1,
+)
+firstai.main(model)
 
-    # cv2.imshow('aa',cropped_img)
-    # cv2.destroyAllWindows()
-    #
-    # firstai.main("./",pts,)
+# with open('./a.png', 'rb') as img_file:
+#   img = img_file.read()
 
-    # os.remove("./a.png")
+# cv2.imshow('aa',cropped_img)
+# cv2.destroyAllWindows()
+#
+# firstai.main("./",pts,)
 
-    # break
+# os.remove("./a.png")
 
-    # mpimg.imsave(os.path.join('./' , cropped_img)
-    # cv2.polylines(image,[pts],True,(0,0,255))
+# break
+
+# mpimg.imsave(os.path.join('./' , cropped_img)
+# cv2.polylines(image,[pts],True,(0,0,255))
