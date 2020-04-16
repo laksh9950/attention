@@ -207,9 +207,13 @@ def process_args(args, defaults):
 
 
 def main(model):
-    os.chdir('./cropped')
-    os.makedirs('new1')
-    os.makedirs('new2')
+    os.chdir('./croppedt')
+    if not os.path.exists('new1'):
+        os.makedirs('new1')
+    if not os.path.exists('new2'):
+        os.makedirs('new2')
+    if not os.path.exists('rot'):
+        os.makedirs('rot')
     for filename in os.listdir():
         if '.jpg' in filename:
             img1 = cv2.imread(filename)
@@ -225,46 +229,65 @@ def main(model):
             cv2.imwrite(fs, rot)
             a = './new1/'+filename
             b = './new2/'+filename
-            with open(a, 'rb') as img_file:
-                img_file_data = img_file.read()
-                text, probability, coordinate_1, coordinate_4, coordinate_10 = model.predict(
-                    img_file_data)
-                print(coordinate_1)
-                if int(coordinate_1[0]) < int(img1.shape[1]/4):
-                    with open(b, 'rb') as img_file:
-                        print('rotated')
-                        img_file_data = img_file.read()
-                        text, probability, coordinate_1, coordinate_4, coordinate_10 = model.predict(
-                            img_file_data)
-                        img_file_data = cv2.imread(filename)
-                        width, height, _ = img_file_data.shape
-                        print(width)
-                        print(coordinate_4)
-                        image = cv2.rectangle(img_file_data, (int(coordinate_4[-1]+5), 0), (height, width), color=(255, 0, 0),
-                                              thickness=2)
-                        v = filename.split('.jpg')[0]+'rotated'+'.jpg'
-                        cv2.imwrite(v, image)
+            try:
+                with open(a, 'rb') as img_file:
+                    img_file_data = img_file.read()
+                    text, probability, coordinates = model.predict(
+                        img_file_data)
+                    coordinate_1 = coordinates[0]
+                    coordinate_4 = coordinates[1]
+                    coordinate_5 = coordinates[2]
+                    coordinate_6 = coordinates[3]
+                    coordinate_9 = coordinates[4]
+                    coordinate_10 = coordinates[5]
+                    coordinate_11 = coordinates[6]
+                    coordinate_14 = coordinates[7]
+                    print(coordinate_14)
+                    print(img1.shape[1])
+                    if (int(coordinate_1[0]) < int(img1.shape[1]/4)) and (int(coordinate_14[0]) <= int(img1.shape[1])):
+                        with open(b, 'rb') as img_file:
+                            print('rotated')
+                            img_file_data = img_file.read()
+                            text, probability, coordinates = model.predict(
+                                img_file_data)
+                            img_file_data = cv2.imread(filename)
+                            width, height, _ = img_file_data.shape
+                            # print(width)
+                            if len(coordinates[2]) == 0:
+                                coordinate_4 = coordinates[1][-1]+5
+                            else:
+                                coordinate_4 = coordinates[2]
+                            print(text)
+                            print((int(np.mean(coordinate_4))))
+                            image = cv2.rectangle(img_file_data, ((int(np.mean(coordinate_4))), 0), (height, width), color=(255, 0, 0),
+                                                  thickness=2)
+                            v = './rot/' + \
+                                filename.split('.jpg')[0]+'rotated'+'.jpg'
+                            cv2.imwrite(v, image)
 
-                        print(text)
-                        shutil.rmtree('./new1')
-                        shutil.rmtree('./new2')
-                        return (text, coordinate_4, 'rotated')
-                else:
-                    with open(b, 'rb') as img_file:
-                        print("original")
-                        img_file_data = img_file.read()
-                        text, probability, coordinate_1, coordinate_4, coordinate_10 = model.predict(
-                            img_file_data)
-                        img_file_data = cv2.imread(filename)
-                        width, height, _ = img_file_data.shape
-                        image = cv2.rectangle(img_file_data, (0, 0), (int(np.mean(coordinate_10)), height), color=(255, 0, 0),
-                                              thickness=2)
-                        v = filename.split('.jpg')[0]+'rotated'+'.jpg'
-                        cv2.imwrite(v, image)
-                        shutil.rmtree('./new1')
-                        shutil.rmtree('./new2')
-                        return(text, coordinate_10, 'not_rotated')
-
+                            print(text)
+                            # return (text, coordinate_4, 'rotated')
+                    else:
+                        with open(b, 'rb') as img_file:
+                            print("original")
+                            img_file_data = img_file.read()
+                            text, probability, coordinates = model.predict(
+                                img_file_data)
+                            if len(coordinates[5]) == 0:
+                                coordinate_10 = coordinates[6][0]-3
+                            else:
+                                coordinate_10 = coordinates[5]
+                            print(text)
+                            img_file_data = cv2.imread(filename)
+                            width, height, _ = img_file_data.shape
+                            image = cv2.rectangle(img_file_data, (0, 0), (int(np.mean(coordinate_10)), height), color=(255, 0, 0),
+                                                  thickness=2)
+                            v = './rot/' + \
+                                filename.split('.jpg')[0]+'rotated'+'.jpg'
+                            cv2.imwrite(v, image)
+                        # return(text, coordinate_10, 'not_rotated')
+            except:
+                print('No coordinate')
             # img_file_data = cv2.imread(filename)
             # width, height, _ = img_file_data.shape
             # image = cv2.rectangle(img_file_data, (0, 0), (int(np.mean(coordinate)), height), color=(255, 0, 0),
