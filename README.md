@@ -1,3 +1,2 @@
 # attention
-Changed the predict function in model.py 
-changed visualization.py 
+Coded a complete solution for OCR on images with the help of self attention.
